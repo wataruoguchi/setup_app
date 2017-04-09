@@ -1,0 +1,127 @@
+---
+- name: Install dumb init
+  get_url:
+    dest: /usr/bin/dumb-init
+    url: https://github.com/Yelp/dumb-init/releases/download/v1.0.2/dumb-init_1.0.2_amd64
+    mode: 0775
+    validate_certs: no
+
+- name: Make node user
+  user:
+    name: "{{ NODE_USER }}"
+    state: present
+    createhome: yes
+    home: "{{ NODE_HOME }}/"
+    group: root
+
+- name: Make node_modules directory
+  file:
+    name: /node_modules
+    state: directory
+    owner: "{{ NODE_USER }}"
+    group: root 
+    mode: 0775
+
+- name: Create NODE_HOME/dist  
+  file:
+    path: "{{ NODE_HOME }}/dist"
+    state: directory 
+    owner: "{{ NODE_USER }}"
+    mode: 0777
+
+- name: Install nodejs
+  yum:
+    name: "{{ item }}"
+    disable_gpg_check: yes
+  with_items:
+    - "{{ NODE_RPM_URL }}"
+    - rsync
+    - git 
+    - which
+
+- name: Create sync dir
+  file:
+    path: /tmp/rsync
+    state: directory
+    owner: "{{ NODE_USER }}"
+    mode: 0777  
+
+- name: Sync static 
+  synchronize:
+    src: /tmp/static/ 
+    dest: /tmp/rsync/
+  remote_user: "{{ NODE_USER }}"
+
+- name: Stat static files
+  command: ls -l /tmp/rsync
+  register: output
+
+- debug: var=output.stdout_lines
+
+- name: Copy static files 
+  shell: "cp -R /tmp/rsync/* {{ NODE_HOME }}/dist"
+
+- name: Remove temp rsync dir
+  file:
+    path: /tmp/rsync
+    state: absent
+
+- name: Symlink package.json
+  file:
+    name: "{{ NODE_ROOT }}/package.json"
+    src: "{{ NODE_HOME }}/package.json"
+    owner: "{{ NODE_USER }}"
+    state: link
+
+- name: Clean npm cache 
+  command: npm cache clean -f
+
+- name: Install the node helper
+  command: npm install -g n
+
+- name: Install the latest node
+  command: n stable
+
+- name: Install node deps
+  command: npm install
+    chdir="{{ NODE_ROOT }}/"
+  remote_user: "{{ NODE_USER }}"
+ 
+- name: Check if gulp is installed
+  stat:
+    path: /usr/bin/gulp
+  register: gulp
+
+- name: Install gulp
+  command: npm install -g gulp
+  when: not gulp.stat.exists
+
+- name: Build static assets
+  command: gulp build
+  args:
+    chdir: "{{ NODE_HOME }}/"
+  environment:
+    NODE_PATH: "{{ NODE_ROOT }}/"
+  remote_user: "{{ NODE_USER }}"
+
+- name: Check if bower is installed 
+  stat:
+    path: /usr/bin/bower
+  register: bower
+
+- name: Install bower
+  command: npm install -g bower
+  when: not bower.stat.exists
+
+- name: Install bower packages 
+  command: bower install
+  args:
+    chdir: "{{ NODE_HOME }}/"
+  remote_user: "{{ NODE_USER }}"
+
+- name: Fetch built assets
+  synchronize:
+    src: "{{ NODE_HOME }}/dist/"
+    dest: /tmp/static
+    mode: pull
+  remote_user: "{{ NODE_USER }}"
