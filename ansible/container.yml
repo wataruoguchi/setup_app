@@ -1,19 +1,78 @@
 version: "2"
+defaults:
+  # How can I save them in a different file? they should be encrypted, and should be different in each env.
+  POSTGRES_USER: django
+  POSTGRES_PASSWORD: sesame
+  POSTGRES_DB: django
+  DJANGO_ROOT: /django
+  DJANGO_USER: django
+  DJANGO_PORT: 8080
+  DJANGO_VENV: /venv
+  NODE_USER: node
+  NODE_HOME: /node
+  NODE_ROOT: ''
+  GULP_DEV_PORT: 8080
 services:
-  # Add your containers here, specifying the base image you want to build from
-  # For example:
-  #
-  # web:
-  #   image: ubuntu:trusty
-  #   ports:
-  #     - "80:80"
-  #   command: ['/usr/bin/dumb-init', '/usr/sbin/apache2ctl', '-D', 'FOREGROUND']
-  #   dev_overrides:
-  #     environment:
-  #       - "DEBUG=1"
-  #
-registries: {}
-  # Add optional registries used for deployment. For example:
-  #  google:
-  #    url: https://gcr.io
-  #    namespace: my-cool-project-xxxxxx   
+  # The Django service runs with the self-reloading development server for the development environment while running with the Gunicorn WSGI server for production
+  django:
+    image: ubuntu:trusty
+    environment:
+      DATABASE_URL: pgsql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@postgresql:5432/{{
+        POSTGRES_DB }}
+      DJANGO_ROOT: '{{ DJANGO_ROOT }}'
+      DJANGO_VENV: '{{ DJANGO_VENV }}'
+    expose:
+    - '{{ DJANGO_PORT }}'
+    working_dir: '{{ DJANGO_ROOT }}'
+    links:
+    - postgresql
+    user: '{{ DJANGO_USER }}'
+    command: ['/usr/bin/dumb-init', '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{ DJANGO_PORT }}', 'project.wsgi:application']
+    entrypoint: [/usr/bin/entrypoint.sh]
+    dev_overrides:
+      command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver,
+        '0.0.0.0:{{ DJANGO_PORT }}']
+      volumes:
+      - $PWD:{{ DJANGO_ROOT }}
+      depends_on:
+      - postgresql
+  # The Gulp service exists to compile our static asset sources into minified and unified distributable assets, but in development, like with Django, we want Gulp to run a self-reloading webserver, recompiling when the developer changes any of the source files
+  gulp:
+    image: ubuntu:trusty
+    user: '{{ NODE_USER }}'
+    working_dir: '{{ NODE_HOME }}'
+    command: ['/bin/false']
+    environment:
+      NODE_HOME: '{{ NODE_HOME }}'
+    volumes:
+      - $PWD:{{ NODE_HOME }}:z
+    dev_overrides:
+      command: [/usr/bin/dumb-init, /usr/local/bin/gulp]
+      ports:
+      - 8080:{{ GULP_DEV_PORT }}
+      - 3001:3001
+      links:
+      - django
+  # The Nginx server runs in production but does not in development orchestration
+ nginx:
+    image: ubuntu:trusty
+    ports:
+    - {{ DJANGO_PORT }}:8000
+    user: nginx
+    links:
+    - django
+    command: ['/usr/bin/dumb-init', 'nginx', '-c', '/etc/nginx/nginx.conf']
+    dev_overrides:
+      ports: []
+      command: /bin/false
+  # The PostgreSQL database server using a stock image from Docker Hub
+  postgresql:
+    image: postgres:9.4
+    expose:
+      - "5432"
+    volumes:
+      - '/var/lib/postgresql/data'
+    environment:
+      POSTGRES_USER: "{{ POSTGRES_USER }}"
+      POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+      POSTGRES_DB: "{{ POSTGRES_DB }}"
