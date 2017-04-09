@@ -15,7 +15,7 @@ defaults:
 services:
   # The Django service runs with the self-reloading development server for the development environment while running with the Gunicorn WSGI server for production
   django:
-    image: ubuntu:trusty
+    image: centos:7
     environment:
       DATABASE_URL: pgsql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@postgresql:5432/{{
         POSTGRES_DB }}
@@ -38,7 +38,7 @@ services:
       - postgresql
   # The Gulp service exists to compile our static asset sources into minified and unified distributable assets, but in development, like with Django, we want Gulp to run a self-reloading webserver, recompiling when the developer changes any of the source files
   gulp:
-    image: ubuntu:trusty
+    image: centos:7
     user: '{{ NODE_USER }}'
     working_dir: '{{ NODE_HOME }}'
     command: ['/bin/false']
@@ -55,7 +55,7 @@ services:
       - django
   # The Nginx server runs in production but does not in development orchestration
   nginx:
-    image: ubuntu:trusty
+    image: centos:7
     ports:
     - {{ DJANGO_PORT }}:8000
     user: nginx
