@@ -12,6 +12,7 @@ defaults:
   NODE_HOME: /node
   NODE_ROOT: ''
   GULP_DEV_PORT: 8080
+  PWD: /home/vagrant/app
 services:
   # The Django service runs with the self-reloading development server for the development environment while running with the Gunicorn WSGI server for production
   django:
@@ -33,7 +34,7 @@ services:
       command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver,
         '0.0.0.0:{{ DJANGO_PORT }}']
       volumes:
-      - $PWD:{{ DJANGO_ROOT }}
+      - {{ PWD }}:{{ DJANGO_ROOT }}
       depends_on:
       - postgresql
   # The Gulp service exists to compile our static asset sources into minified and unified distributable assets, but in development, like with Django, we want Gulp to run a self-reloading webserver, recompiling when the developer changes any of the source files
@@ -45,7 +46,7 @@ services:
     environment:
       NODE_HOME: '{{ NODE_HOME }}'
     volumes:
-      - $PWD:{{ NODE_HOME }}:z
+      - {{ PWD }}:{{ NODE_HOME }}:z
     dev_overrides:
       command: [/usr/bin/dumb-init, /usr/local/bin/gulp]
       ports:
