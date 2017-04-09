@@ -54,7 +54,7 @@ services:
       links:
       - django
   # The Nginx server runs in production but does not in development orchestration
- nginx:
+  nginx:
     image: ubuntu:trusty
     ports:
     - {{ DJANGO_PORT }}:8000
@@ -76,3 +76,8 @@ services:
       POSTGRES_USER: "{{ POSTGRES_USER }}"
       POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
       POSTGRES_DB: "{{ POSTGRES_DB }}"
+
+registries: {}
+
+volumes:
+  postgres-data: {}
