@@ -1,11 +1,7 @@
 #!/bin/sh
 
-# Move old files
-mv ./manage.py ./manage.py.bk
-mv ./composeexample/urls.py ./composeexample/urls.py.bk
-mv ./composeexample/wsgi.py ./composeexample/wsgi.py.bk
-mv ./composeexample/__init__.py ./composeexample/__init__.py.bk
-mv ./composeexample/settings.py ./composeexample/settings.py.bk
+# Remove old files
+rm ./manage.py ./composeexample/urls.py ./composeexample/wsgi.py ./composeexample/__init__.py ./composeexample/settings.py
 
 # This instructs Compose to run django-admin.py startproject composeexample in a container, using the web service’s image and configuration.
 docker-compose run web django-admin.py startproject composeexample .
