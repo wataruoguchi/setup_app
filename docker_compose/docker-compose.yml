@@ -1,13 +1,25 @@
 version: '2'
 services:
-  db:
-    image: postgres
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/code
+  nginx:
+    image: nginx:latest
+    container_name: wataru-nginx
     ports:
       - "8000:8000"
+    volumes:
+      - ./src:/src
+      - ./config/nginx:/etc/nginx/conf.d
+    depends_on:
+      - web
+  db:
+    image: postgres:latest
+    container_name: wataru-pg
+  web:
+    build: .
+    container_name: wataru-web
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && cd ../src && gunicorn example.wsgi -b 0.0.0.0:8000"
+    volumes:
+      - ./src:/src
     depends_on:
       - db
+    expose:
+      - "8000"
