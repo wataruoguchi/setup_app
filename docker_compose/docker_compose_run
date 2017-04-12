@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Move old files
+mv ./manage.py ./manage.py.bk
+mv ./composeexample/urls.py ./composeexample/urls.py.bk
+mv ./composeexample/wsgi.py ./composeexample/wsgi.py.bk
+mv ./composeexample/__init__.py ./composeexample/__init__.py.bk
+mv ./composeexample/settings.py ./composeexample/settings.py.bk
+
 # This instructs Compose to run django-admin.py startproject composeexample in a container, using the web service’s image and configuration.
 docker-compose run web django-admin.py startproject composeexample .
 # If you are running Docker on Linux, the files django-admin created are owned by root. This happens because the container runs as the root user. Change the ownership of the new files.
