@@ -1,3 +1,2 @@
 *.retry
 *.pyc
-docker_compose/src/*
