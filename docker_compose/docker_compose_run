@@ -1,10 +1,67 @@
-#!/bin/sh
+#!/bin/bash
 
-# Remove old files
-mv ./src/example/settings.py .
-rm -r ./src/example ./src
-# This instructs Compose to run django-admin.py startproject composeexample in a container, using the web service’s image and configuration.
-docker-compose run web django-admin.py startproject example ../src
-# If you are running Docker on Linux, the files django-admin created are owned by root. This happens because the container runs as the root user. Change the ownership of the new files.
-sudo chown -R $USER:$USER .
-mv settings.py ./src/example/
+function d_clean_container {
+  # Remove all docker containers
+  docker stop $(docker ps -a -q)
+  docker rm $(docker ps -a -q)
+}
+
+function dc_rebuild {
+  # https://docs.docker.com/compose/production/#modify-your-compose-file-for-production
+  docker-compose build web
+  docker-compose up --no-deps -d web
+}
+
+docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm # clean stopped containers
+docker rmi $(docker images -f dangling=true -q) # clean unused images
+
+if [ $# == '0' ]; then
+  dc_reduild
+else
+  if [ $1 == 'scratch' ]; then
+    d_clearn_container
+    # Caution: You might lose all assets of the app
+    docker rmi $(docker images -a -q)
+
+    # Remove old files
+    rm -r ./src/example ./src
+
+    # This instructs Compose to run django-admin.py startproject composeexample in a container, using the web service’s image and configuration.
+    docker-compose run web django-admin.py startproject example ../src
+
+    # If you are running Docker on Linux, the files django-admin created are owned by root. This happens because the container runs as the root user. Change the ownership of the new files.
+    sudo chown -R $USER:$USER .
+
+    # Edit generated settings.py manually
+    #
+    # ALLOWED_HOSTS = ['web']
+    #
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #         'NAME': 'postgres',
+    #         'USER': 'postgres',
+    #         'PASSWORD': 'pgpasswd'
+    #         'HOST': 'db',
+    #         'PORT': 5432,
+    #     }
+    # }
+    #
+    # STATIC_ROOT = '/static/'
+    vi ./src/example/settings.py
+
+    # Edit generated urls.py
+    # https://docs.djangoproject.com/en/1.11/howto/static-files/#serving-static-files-during-development
+    vi ./src/example/urls.py
+
+    # create containers
+    docker-compose up -d
+  fi
+
+  if [ $1 == 'rebuild' ]; then
+    dc_rebuild
+  fi
+fi
+
+sleep 6
+docker ps -a
