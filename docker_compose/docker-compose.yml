@@ -1,24 +1,31 @@
 version: '2'
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.11.13
     container_name: wataru-nginx
     ports:
       - "8000:8000"
     volumes:
       - ./src:/src
       - ./config/nginx:/etc/nginx/conf.d
+      - ./static:/static
     depends_on:
       - web
   db:
-    image: postgres:latest
+    image: postgres:9.6.2
     container_name: wataru-pg
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=pgpasswd
+      - POSTGRES_USER=postgres
   web:
     build: .
     container_name: wataru-web
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && cd ../src && gunicorn example.wsgi -b 0.0.0.0:8000"
+    command: bash -c "python manage.py collectstatic && python manage.py makemigrations && python manage.py migrate && cd ../src && gunicorn example.wsgi -b 0.0.0.0:8000"
     volumes:
       - ./src:/src
+      - ./static:/static
     depends_on:
       - db
     expose:
