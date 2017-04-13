@@ -22,7 +22,7 @@ services:
   web:
     build: .
     container_name: wataru-web
-    command: bash -c "python manage.py collectstatic && python manage.py makemigrations && python manage.py migrate && cd ../src && gunicorn example.wsgi -b 0.0.0.0:8000"
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py makemigrations && python manage.py migrate && cd ../src && gunicorn example.wsgi -b 0.0.0.0:8000"
     volumes:
       - ./src:/src
       - ./static:/static
