@@ -24,10 +24,10 @@ else
     docker rmi $(docker images -a -q)
 
     # Remove old files
-    rm -r ./src/example ./src
+    rm -r ./app
 
     # This instructs Compose to run django-admin.py startproject composeexample in a container, using the web service’s image and configuration.
-    docker-compose run web django-admin.py startproject example ../src
+    docker-compose run web django-admin.py startproject example /src
 
     # If you are running Docker on Linux, the files django-admin created are owned by root. This happens because the container runs as the root user. Change the ownership of the new files.
     sudo chown -R $USER:$USER .
@@ -48,11 +48,11 @@ else
     # }
     #
     # STATIC_ROOT = '/static/'
-    vi ./src/example/settings.py
+    vi ./app/src/example/settings.py
 
     # Edit generated urls.py
     # https://docs.djangoproject.com/en/1.11/howto/static-files/#serving-static-files-during-development
-    vi ./src/example/urls.py
+    vi ./app/src/example/urls.py
 
     # create containers
     docker-compose up -d
