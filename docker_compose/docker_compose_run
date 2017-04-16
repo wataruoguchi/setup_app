@@ -16,7 +16,7 @@ docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm # clean stopped con
 docker rmi $(docker images -f dangling=true -q) # clean unused images
 
 if [ $# == '0' ]; then
-  dc_reduild
+  dc_rebuild
 else
   if [ $1 == 'scratch' ]; then
     d_clearn_container
