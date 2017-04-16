@@ -33,6 +33,6 @@ services:
   node:
     build:
       context: .
-      dockerfile: Dockerfile.node
+      dockerfile: node/Dockerfile
     volumes_from:
       - web:rw

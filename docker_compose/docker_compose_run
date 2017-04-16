@@ -64,7 +64,7 @@ else
 
   if [ $1 == 'dev' ]; then
     if [ $2 == 'build' ]; then
-      docker build -t dev -f Dockerfile.ubuntu .
+      docker build -t dev -f dev/Dockerfile .
     fi
     docker run --name wataru-dev -it dev /bin/bash
   fi
