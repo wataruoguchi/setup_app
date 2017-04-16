@@ -13,7 +13,7 @@ function dc_rebuild {
 }
 
 docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm # clean stopped containers
-docker rmi $(docker images -f dangling=true -q) # clean unused images
+docker rmi -f $(docker images -q -a -f dangling=true) # clean unused images
 
 if [ $# == '0' ]; then
   dc_rebuild
