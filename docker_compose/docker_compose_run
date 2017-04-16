@@ -61,6 +61,13 @@ else
   if [ $1 == 'rebuild' ]; then
     dc_rebuild
   fi
+
+  if [ $1 == 'dev' ]; then
+    if [ $2 == 'build' ]; then
+      docker build -t dev -f Dockerfile.ubuntu .
+    fi
+    docker run --name wataru-dev -it dev /bin/bash
+  fi
 fi
 
 sleep 6
