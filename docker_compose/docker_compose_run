@@ -19,7 +19,7 @@ if [ $# == '0' ]; then
   dc_rebuild
 else
   if [ $1 == 'scratch' ]; then
-    d_clearn_container
+    d_clean_container
     # Caution: You might lose all assets of the app
     docker rmi $(docker images -a -q)
 
