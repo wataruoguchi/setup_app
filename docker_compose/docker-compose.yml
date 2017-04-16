@@ -30,3 +30,9 @@ services:
       - db
     expose:
       - "8000"
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    volumes_from:
+      - web:rw
