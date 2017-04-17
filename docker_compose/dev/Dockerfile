@@ -12,7 +12,7 @@ WORKDIR /src
 RUN apt-get update && apt-get -y upgrade
 RUN apt-get install -y python python3.5 python-pip python3-pip \
     nodejs npm \
-    tmux vim git unzip \
+    tmux vim git unzip curl \
     && pip install --upgrade pip
 
 # DEFAULT COMMAND
