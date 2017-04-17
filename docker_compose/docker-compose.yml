@@ -2,7 +2,7 @@ version: '2'
 services:
   nginx:
     image: nginx:1.11.13
-    container_name: wataru-nginx
+    container_name: "${USER}-nginx"
     ports:
       - "8000:8000"
     volumes:
@@ -13,7 +13,7 @@ services:
       - web
   db:
     image: postgres:9.6.2
-    container_name: wataru-pg
+    container_name: "${USER}-pg"
     ports:
       - "5432:5432"
     environment:
@@ -21,7 +21,7 @@ services:
       - POSTGRES_USER=postgres
   web:
     build: .
-    container_name: wataru-web
+    container_name: "${USER}-web"
     command: bash -c "python manage.py collectstatic --noinput && python manage.py makemigrations && python manage.py migrate && cd ../src && gunicorn example.wsgi -b 0.0.0.0:8000"
     volumes:
       - ./app/src:/src
@@ -34,6 +34,6 @@ services:
     build:
       context: .
       dockerfile: node/Dockerfile
-    container_name: wataru-node
+    container_name: "${USER}-node"
     volumes_from:
       - web:rw
