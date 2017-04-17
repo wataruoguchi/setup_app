@@ -104,7 +104,6 @@ else:
       d_app_fromscratch(_argv[2])
     else:
       d_app_fromscratch()
-    else:
   elif _argv[1] == 'rebuild':
     if len(_argv) > 2:
       if _argv[2] == 'all':
