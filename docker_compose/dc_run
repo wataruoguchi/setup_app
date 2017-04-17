@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import sys
-from subprocess import call
+from subprocess import call, check_output
 import time
 
 # Functions
@@ -62,8 +62,30 @@ def d_app_fromscratch():
   # create containers
   mybash("docker-compose up -d")
 
-def d_ps():
-  mybash("docker ps -a")
+def d_ps(name = None):
+  if not name:
+    script = "docker ps -a"
+  else:
+    script = "docker ps -f 'name=%s'" % name
+  mybash(script)
+  rows = str(check_output(script, shell=True)).split('\\n')
+  rows.pop(0)
+  # Fiter a row which has more than a letter
+  rows = list(filter(lambda r: len(r) > 1, rows))
+  containers = []
+  for row in rows:
+    # Assuming it's ok splitting by double spaces
+    cols = row.split('  ')
+    containers.append({
+      'id': cols[0],
+      'image': cols[1],
+      'command': cols[2],
+      'craeted': cols[3],
+      'status': cols[4],
+      'ports': cols[5],
+      'names': cols[6],
+    })
+  return containers
 
 # Start
 d_clean()
@@ -90,7 +112,16 @@ else:
   elif _argv[1] == 'dev':
     if len(_argv) > 2 and _argv[2] == 'build':
       mybash("docker build -t dev -f dev/Dockerfile .")
-    mybash("docker run --name wataru-dev -it dev /bin/bash")
+    # check if the contaienr exists
+    # TODO change the name dynamically e.g., $user-dev
+    d = d_ps('wataru-web')
+    if len(d):
+      mybash("docker exec -it %s /bin/bash" % d[0]['id'])
+    else:
+      mybash("docker run --name wataru-dev -it dev /bin/bash")
+    # TODO open tmux
+    # TODO docker is enabled in dev-env
+    # TODO add shared volume -v
 
 time.sleep(6)
 d_ps()
