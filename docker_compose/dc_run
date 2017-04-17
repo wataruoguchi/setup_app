@@ -7,7 +7,7 @@ import time
 # Functions
 
 def mybash(cmd):
-  subproc = call(cmd, shell=True)
+  call(cmd, shell=True)
   
 def d_clean_all_containers():
   # Remove all docker containers
@@ -91,7 +91,7 @@ def d_ps(name = None):
 d_clean()
 
 def dc_rebuild_all():
-  print "Hint: Try again if it didn't work well"
+  print("Hint: Try again if it didn't work well")
   dc_rebuild()
 
 
