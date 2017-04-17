@@ -107,10 +107,7 @@ else:
       d_app_fromscratch()
   elif _argv[1] == 'rebuild':
     if len(_argv) > 2:
-      if _argv[2] == 'all':
-        dc_rebuild_all()
-      else:
-        dc_rebuild(len(_argv[2]))
+      dc_rebuild(len(_argv[2]))
     else:
       dc_rebuild_all()
   elif _argv[1] == 'dev':
