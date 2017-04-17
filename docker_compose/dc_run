@@ -118,7 +118,7 @@ else:
       mybash("docker build -t dev -f dev/Dockerfile .")
     # check if the contaienr exists
     # TODO change the name dynamically e.g., $user-dev
-    d = d_ps('wataru-web')
+    d = d_ps('wataru-dev')
     if len(d):
       mybash("docker exec -it %s /bin/bash" % d[0]['id'])
     else:
