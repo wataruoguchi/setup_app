@@ -126,3 +126,14 @@ else:
 time.sleep(6)
 d_ps()
 
+##
+# Usage:
+#   dc_run
+#     - rebuild web and run it
+#   dc_run scratch
+#     - delete everything then make env and app from scratch
+#   dc_run rebuild [all, [docker_image_name]]
+#     - rebuild images and run container(s)
+#   dc_run dev [build]
+#     - run dev container
+##
