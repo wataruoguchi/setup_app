@@ -3,6 +3,7 @@ import subprocess
 import sys
 from subprocess import call, check_output
 import time
+import getpass
 
 # Functions
 
@@ -115,13 +116,13 @@ else:
   elif _argv[1] == 'dev':
     if len(_argv) > 2 and _argv[2] == 'build':
       mybash("docker build -t dev -f dev/Dockerfile .")
+    uname = getpass.getuser()
+    d = d_ps('%s-dev' % uname)
     # check if the contaienr exists
-    # TODO change the name dynamically e.g., $user-dev
-    d = d_ps('wataru-dev')
     if len(d):
       mybash("docker exec -it %s /bin/bash" % d[0]['id'])
     else:
-      mybash("docker run --name wataru-dev -it dev /bin/bash")
+      mybash("docker run --name %s-dev -it dev /bin/bash" % uname)
     # TODO open tmux
     # TODO docker is enabled in dev-env
     # TODO add shared volume -v
