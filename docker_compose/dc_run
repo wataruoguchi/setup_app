@@ -23,7 +23,7 @@ def d_clean():
   # clean unused images
   mybash("docker rmi -f $(docker images -q -a -f dangling=true)")
 
-def d_app_fromscratch():
+def d_app_fromscratch(projectname = 'example'):
   d_clean_all_containers()
   # Caution: You might lose all assets of the app
   mybash("docker rmi $(docker images -a -q)")
@@ -32,7 +32,7 @@ def d_app_fromscratch():
   mybash("rm -r ./app")
 
   # This instructs Compose to run django-admin.py startproject composeexample in a container, using the web service’s image and configuration.
-  mybash("docker-compose run web django-admin.py startproject example /src")
+  mybash("docker-compose run web django-admin.py startproject %s /src" % projectname)
 
   # If you are running Docker on Linux, the files django-admin created are owned by root. This happens because the container runs as the root user. Change the ownership of the new files.
   mybash("sudo chown -R $USER:$USER .")
@@ -53,11 +53,11 @@ def d_app_fromscratch():
   # }
   #
   # STATIC_ROOT = '/static/'
-  mybash("vi ./app/src/example/settings.py")
+  mybash("vi ./app/src/%s/settings.py" % projectname)
 
   # Edit generated urls.py
   # https://docs.djangoproject.com/en/1.11/howto/static-files/#serving-static-files-during-development
-  mybash("vi ./app/src/example/urls.py")
+  mybash("vi ./app/src/%s/urls.py" % projectname)
 
   # create containers
   mybash("docker-compose up -d")
@@ -100,7 +100,11 @@ if len(_argv) <= 1:
   dc_rebuild('web')
 else:
   if _argv[1] == 'scratch':
-    d_app_fromscratch()
+    if len(_argv) > 2:
+      d_app_fromscratch(_argv[2])
+    else:
+      d_app_fromscratch()
+    else:
   elif _argv[1] == 'rebuild':
     if len(_argv) > 2:
       if _argv[2] == 'all':
@@ -130,7 +134,7 @@ d_ps()
 # Usage:
 #   dc_run
 #     - rebuild web and run it
-#   dc_run scratch
+#   dc_run scratch <django_project_name>
 #     - delete everything then make env and app from scratch
 #   dc_run rebuild [all, [docker_image_name]]
 #     - rebuild images and run container(s)
